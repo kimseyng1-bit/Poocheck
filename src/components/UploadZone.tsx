@@ -9,7 +9,6 @@ interface Props {
 
 export default function UploadZone({ onImageSelected }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -25,9 +24,40 @@ export default function UploadZone({ onImageSelected }: Props) {
     reader.readAsDataURL(file);
   }
 
+  // Android fix: always create a fresh <input> element so that onChange fires
+  // reliably after camera capture. Reusing a hidden ref'd input causes Android
+  // Chrome to silently drop the result on second+ uses.
+  function openCamera() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.setAttribute("capture", "environment");
+    input.style.display = "none";
+    document.body.appendChild(input);
+
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) processFile(file);
+      document.body.removeChild(input);
+    };
+
+    // Cleanup if user cancels without selecting
+    const cleanup = () => {
+      setTimeout(() => {
+        if (document.body.contains(input)) document.body.removeChild(input);
+      }, 500);
+      window.removeEventListener("focus", cleanup);
+    };
+    window.addEventListener("focus", cleanup);
+
+    input.click();
+  }
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) processFile(file);
+    // Reset so the same file can be re-selected if needed
+    e.target.value = "";
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -51,10 +81,7 @@ export default function UploadZone({ onImageSelected }: Props) {
           />
           <button
             type="button"
-            onClick={() => {
-              setPreview(null);
-              if (fileInputRef.current) fileInputRef.current.value = "";
-            }}
+            onClick={() => setPreview(null)}
             className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-black/70 transition"
             aria-label="사진 제거"
           >
@@ -83,7 +110,7 @@ export default function UploadZone({ onImageSelected }: Props) {
       <div className="flex gap-3">
         <button
           type="button"
-          onClick={() => cameraInputRef.current?.click()}
+          onClick={openCamera}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500 text-white font-semibold text-sm shadow hover:bg-amber-600 active:scale-95 transition"
         >
           <span>📷</span> 카메라 촬영
@@ -97,16 +124,7 @@ export default function UploadZone({ onImageSelected }: Props) {
         </button>
       </div>
 
-      {/* Camera (mobile — capture) */}
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-      {/* Gallery */}
+      {/* Gallery picker (ref 방식 — 갤러리는 문제 없음) */}
       <input
         ref={fileInputRef}
         type="file"
