@@ -7,6 +7,32 @@ interface Props {
   onImageSelected: (base64: string, mediaType: string, preview: string) => void;
 }
 
+// Compress via Canvas — fixes iOS Safari "string did not match expected pattern"
+// error caused by fetch rejecting oversized base64 payloads from high-res
+// iPhone camera photos (12–48 MP → 10–20 MB base64).
+function compressImage(
+  dataUrl: string,
+  maxWidth = 1280,
+  quality = 0.82
+): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 export default function UploadZone({ onImageSelected }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -14,12 +40,13 @@ export default function UploadZone({ onImageSelected }: Props) {
 
   function processFile(file: File) {
     const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const [meta, base64] = dataUrl.split(",");
-      const mediaType = meta.match(/:(.*?);/)?.[1] ?? "image/jpeg";
-      setPreview(dataUrl);
-      onImageSelected(base64, mediaType, dataUrl);
+    reader.onload = async () => {
+      const raw = reader.result as string;
+      // Always compress — reduces payload and normalises to JPEG/base64
+      const compressed = await compressImage(raw);
+      const base64 = compressed.split(",")[1];
+      setPreview(compressed);
+      onImageSelected(base64, "image/jpeg", compressed);
     };
     reader.readAsDataURL(file);
   }
