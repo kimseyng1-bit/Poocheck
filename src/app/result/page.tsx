@@ -10,6 +10,7 @@ interface StoredData {
   result: AnalysisResult;
   preview: string;
   pet: PetProfile;
+  createdAt?: string; // set when opened from the history timeline
 }
 
 export default function ResultPage() {
@@ -49,17 +50,28 @@ export default function ResultPage() {
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-5">
         {/* Photo thumbnail */}
-        <div className="relative w-full rounded-2xl overflow-hidden border border-stone-200 shadow-sm max-h-52">
-          <Image
-            src={data.preview}
-            alt="분석된 사진"
-            width={400}
-            height={208}
-            className="w-full object-cover"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        </div>
+        {data.preview && (
+          <div className="relative w-full rounded-2xl overflow-hidden border border-stone-200 shadow-sm max-h-52">
+            <Image
+              src={data.preview}
+              alt="분석된 사진"
+              width={400}
+              height={208}
+              className="w-full object-cover"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
+        )}
+
+        {data.createdAt && (
+          <p className="text-xs text-stone-500 text-center">
+            {new Date(data.createdAt).toLocaleString("ko-KR", {
+              year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+            })}{" "}
+            분석 기록
+          </p>
+        )}
 
         {/* Result */}
         <ResultCard result={data.result} petName={data.pet.name || undefined} />
@@ -73,6 +85,13 @@ export default function ResultPage() {
           className="w-full py-4 rounded-2xl bg-amber-500 text-white font-bold text-base shadow-md hover:bg-amber-600 active:scale-95 transition"
         >
           다시 분석하기
+        </button>
+
+        <button
+          onClick={() => router.push("/history")}
+          className="w-full py-3 rounded-2xl bg-white text-stone-700 font-semibold text-sm border border-stone-200 shadow-sm hover:bg-stone-50 active:scale-95 transition"
+        >
+          📅 지난 기록 보기
         </button>
 
         <p className="text-center text-xs text-stone-400 pb-4">

@@ -19,6 +19,14 @@ export interface AnalysisResult {
   advice: string;
 }
 
+export interface HistoryEntry {
+  id: string;
+  createdAt: string; // ISO timestamp
+  result: AnalysisResult;
+  petName: string;
+  thumbnail: string; // small JPEG data URL
+}
+
 export interface AnalyzeRequest {
   imageBase64: string;
   mediaType: string;

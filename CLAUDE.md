@@ -14,6 +14,7 @@ PooCheck is a mobile-first web app that lets dog owners upload a photo of their 
 src/
 ├── app/
 │   ├── api/analyze/route.ts   # POST /api/analyze — image → Claude Vision
+│   ├── history/page.tsx       # Analysis history timeline + 30-day summary
 │   ├── profile/page.tsx       # Pet profile setup
 │   ├── result/page.tsx        # Analysis result display
 │   ├── layout.tsx             # Root layout (mobile viewport, fonts)
@@ -27,7 +28,8 @@ src/
 ├── hooks/
 │   └── useAnalysis.ts         # Client-side analysis state machine
 ├── lib/
-│   └── claude.ts              # Anthropic client + analysis prompt
+│   ├── claude.ts              # Anthropic client + analysis prompt
+│   └── history.ts             # localStorage history store (max 60, thumbnails)
 └── types/
     └── index.ts               # Shared TypeScript types
 ```
@@ -71,4 +73,5 @@ npm run lint     # ESLint
 - All pages are mobile-first (max-w-md centered)
 - Image is converted to base64 before sending to Claude
 - Pet profile is stored in `localStorage` (no backend DB)
+- Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
