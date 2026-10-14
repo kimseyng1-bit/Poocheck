@@ -30,6 +30,7 @@ src/
 │   └── useAnalysis.ts         # Client-side analysis state machine
 ├── lib/
 │   ├── claude.ts              # Anthropic client + analysis prompt
+│   ├── verdict.ts             # green/yellow/red rules (Bristol + findings → level)
 │   └── history.ts             # localStorage history store (max 60, thumbnails)
 └── types/
     └── index.ts               # Shared TypeScript types
@@ -63,7 +64,8 @@ npm run lint     # ESLint
 
 // Response
 {
-  "level": "green" | "yellow" | "red",
+  "level": "green" | "yellow" | "red",   // computed in code, not by Claude
+  "level_reasons": ["혈액", ...],         // what set the level; [] for green
   "bristol_score": 1-7,
   "confidence": "high" | "medium" | "low",
   "confidence_reason": "Why this confidence level",
@@ -82,4 +84,4 @@ npm run lint     # ESLint
 - Pet profile is stored in `localStorage` (no backend DB)
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
-- Analysis uses structured outputs (JSON schema) + `temperature: 0`; the level has a code-enforced floor by Bristol score (7 → red, 1/5/6 → at least yellow)
+- Analysis uses structured outputs (JSON schema) + `temperature: 0`. Claude reports only the Bristol score and yes/no findings; the level is computed by `src/lib/verdict.ts` (change verdict rules there, not in the prompt)

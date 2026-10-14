@@ -48,6 +48,16 @@ export default function ResultCard({ result, petName }: Props) {
       {/* Summary */}
       <p className="text-stone-800 font-medium leading-relaxed">{result.summary}</p>
 
+      {/* Why this level */}
+      {result.level_reasons && (
+        <p className="text-xs text-stone-500">
+          <span className="font-semibold text-stone-600">판정 근거</span>{" "}
+          {result.level_reasons.length > 0
+            ? result.level_reasons.join(" · ")
+            : "브리스톨 2~4단계, 이상 소견 없음"}
+        </p>
+      )}
+
       {/* Bristol scale */}
       {result.bristol_score && <BristolScale score={result.bristol_score} />}
 

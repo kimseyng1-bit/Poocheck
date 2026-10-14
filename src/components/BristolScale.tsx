@@ -1,21 +1,7 @@
 import type { BristolScore } from "@/types";
+import { BRISTOL_LABELS, levelForBristol } from "@/lib/verdict";
 
-const LABELS: Record<BristolScore, string> = {
-  1: "딱딱한 덩어리",
-  2: "울퉁불퉁한 소시지형",
-  3: "금이 간 소시지형",
-  4: "부드러운 소시지형",
-  5: "부드러운 덩어리",
-  6: "죽 같은 변",
-  7: "물설사",
-};
-
-// Same thresholds as the verdict rules in src/lib/claude.ts.
-function stepColor(step: number) {
-  if (step >= 2 && step <= 4) return "bg-green-400";
-  if (step === 7) return "bg-red-400";
-  return "bg-yellow-400";
-}
+const STEP_COLOR = { green: "bg-green-400", yellow: "bg-yellow-400", red: "bg-red-400" };
 
 export default function BristolScale({ score }: { score: BristolScore }) {
   return (
@@ -23,7 +9,7 @@ export default function BristolScale({ score }: { score: BristolScore }) {
       <div className="flex items-baseline justify-between">
         <p className="text-xs text-stone-400 font-medium">브리스톨 척도</p>
         <p className="text-sm font-semibold text-stone-700">
-          {score}단계 · {LABELS[score]}
+          {score}단계 · {BRISTOL_LABELS[score]}
         </p>
       </div>
       <div className="flex gap-1">
@@ -32,7 +18,7 @@ export default function BristolScale({ score }: { score: BristolScore }) {
             <div
               className={[
                 "w-full h-2 rounded-full",
-                stepColor(step),
+                STEP_COLOR[levelForBristol(step)],
                 step === score ? "ring-2 ring-offset-1 ring-stone-700" : "opacity-30",
               ].join(" ")}
             />
