@@ -8,7 +8,7 @@ export const FINDINGS: Record<keyof AnalysisFindings, { label: string; level: An
   blood: { label: "혈액", level: "red", prompt: "선홍색 피가 묻어 있거나 섞여 있음" },
   black_tarry: { label: "검은 타르변", level: "red", prompt: "검고 끈적한 타르 같은 변 (소화기 출혈 의심)" },
   parasites: { label: "기생충", level: "red", prompt: "쌀알·실·국수 모양 등 기생충으로 보이는 것" },
-  foreign_body: { label: "이물", level: "red", prompt: "플라스틱·천·끈 등 삼킨 이물이 변 속에 보임 (주변 바닥·표지판 등은 제외)" },
+  foreign_body: { label: "이물", level: "red", prompt: "플라스틱·천·끈·뼛조각 등 삼켰다가 변 속에 섞여 나온 이물이 보임. 변 위에 꽂히거나 얹힌 막대·깃발·나뭇잎·흙처럼 배변 후 바깥에서 닿은 물체와 주변 바닥·표지판은 해당하지 않음" },
   pale: { label: "회백색 변", level: "red", prompt: "회색·흰색에 가까운 창백한 변" },
   mucus: { label: "점액", level: "yellow", prompt: "투명하거나 젤리 같은 점액이 덮여 있거나 섞여 있음" },
   abnormal_color: { label: "비정상 색", level: "yellow", prompt: "노랑·주황·초록 등 갈색 계열이 아닌 색 (검정·회백색은 위 항목으로)" },
