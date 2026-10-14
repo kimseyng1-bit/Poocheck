@@ -1,5 +1,6 @@
 import type { AnalysisResult } from "@/types";
 import StatusBadge from "./StatusBadge";
+import BristolScale from "./BristolScale";
 
 interface Props {
   result: AnalysisResult;
@@ -24,6 +25,12 @@ const DETAIL_LABELS: Record<string, string> = {
   foreign_objects: "이물질",
 };
 
+const CONFIDENCE = {
+  high: { label: "높음", className: "bg-green-100 text-green-800" },
+  medium: { label: "보통", className: "bg-yellow-100 text-yellow-800" },
+  low: { label: "낮음", className: "bg-red-100 text-red-800" },
+};
+
 export default function ResultCard({ result, petName }: Props) {
   return (
     <div className={`rounded-2xl border-2 bg-gradient-to-b ${LEVEL_BG[result.level]} p-5 space-y-5 shadow-sm`}>
@@ -41,6 +48,9 @@ export default function ResultCard({ result, petName }: Props) {
       {/* Summary */}
       <p className="text-stone-800 font-medium leading-relaxed">{result.summary}</p>
 
+      {/* Bristol scale */}
+      {result.bristol_score && <BristolScale score={result.bristol_score} />}
+
       {/* Details */}
       <div className="space-y-2">
         {(Object.keys(result.details) as Array<keyof typeof result.details>).map((key) => (
@@ -53,6 +63,16 @@ export default function ResultCard({ result, petName }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Confidence */}
+      {result.confidence && (
+        <div className="flex gap-3 items-start text-xs text-stone-500">
+          <span className={`shrink-0 px-2 py-0.5 rounded-full font-semibold ${CONFIDENCE[result.confidence].className}`}>
+            신뢰도 {CONFIDENCE[result.confidence].label}
+          </span>
+          {result.confidence_reason && <p className="leading-relaxed">{result.confidence_reason}</p>}
+        </div>
+      )}
 
       {/* Advice */}
       <div className="bg-white/70 rounded-xl px-4 py-3 border border-stone-100">

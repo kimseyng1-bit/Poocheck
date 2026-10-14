@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzePoopImage } from "@/lib/claude";
+import { analyzePoopImage, InvalidImageError } from "@/lib/claude";
 import type { AnalyzeResponse } from "@/types";
 
 export const runtime = "nodejs";
@@ -20,6 +20,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalyzeRespon
     const result = await analyzePoopImage(imageBase64, mediaType ?? "image/jpeg", pet);
     return NextResponse.json({ result });
   } catch (err) {
+    if (err instanceof InvalidImageError) {
+      return NextResponse.json({ error: err.message, code: err.code }, { status: 422 });
+    }
     const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
     console.error("[/api/analyze]", message);
     return NextResponse.json({ error: message }, { status: 500 });
