@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AnalysisLevel, AnalysisResult, BristolScore, PetProfile } from "@/types";
+import type { AnalysisFindings, AnalysisResult, BristolScore, PetProfile } from "@/types";
+import { computeVerdict, FINDING_KEYS, FINDINGS } from "@/lib/verdict";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -28,8 +29,8 @@ const OUTPUT_SCHEMA = {
   additionalProperties: false,
   required: [
     "image_check",
-    "level",
     "bristol_score",
+    "findings",
     "confidence",
     "confidence_reason",
     "summary",
@@ -38,8 +39,13 @@ const OUTPUT_SCHEMA = {
   ],
   properties: {
     image_check: { type: "string", enum: ["ok", "not_stool", "unclear"] },
-    level: { type: "string", enum: ["green", "yellow", "red"] },
     bristol_score: { type: "integer", enum: [1, 2, 3, 4, 5, 6, 7] },
+    findings: {
+      type: "object",
+      additionalProperties: false,
+      required: FINDING_KEYS,
+      properties: Object.fromEntries(FINDING_KEYS.map((k) => [k, { type: "boolean" }])),
+    },
     confidence: { type: "string", enum: ["high", "medium", "low"] },
     confidence_reason: { type: "string" },
     summary: { type: "string" },
@@ -55,14 +61,19 @@ const OUTPUT_SCHEMA = {
     },
     advice: { type: "string" },
   },
-} as const;
+};
 
-interface RawOutput extends Omit<AnalysisResult, "bristol_score" | "confidence" | "confidence_reason"> {
+interface RawOutput extends Omit<AnalysisResult, "level" | "bristol_score" | "confidence" | "confidence_reason"> {
   image_check: "ok" | "not_stool" | "unclear";
   bristol_score: BristolScore;
+  findings: AnalysisFindings;
   confidence: "high" | "medium" | "low";
   confidence_reason: string;
 }
+
+const FINDINGS_TEXT = FINDING_KEYS.map(
+  (k) => `- ${k}: ${FINDINGS[k].prompt} [${FINDINGS[k].level === "red" ? "위험" : "주의"} 소견]`
+).join("\n");
 
 function buildPrompt(pet: PetProfile): string {
   const petDesc = `강아지 이름: ${pet.name || "미상"}, 나이: ${pet.age ? `${pet.age}살` : "미상"}, 품종: ${pet.breed || "미상"}`;
@@ -75,18 +86,21 @@ function buildPrompt(pet: PetProfile): string {
 - "ok": 강아지 배변이 판단 가능할 만큼 선명하게 보임
 - "not_stool": 배변이 아닌 사진 (사람, 음식, 풍경, 다른 물체 등)
 - "unclear": 배변으로 보이지만 흐림·어두움·너무 멀어서 색과 형태를 판단할 수 없음
-not_stool 또는 unclear이면 나머지 필드는 형식만 맞춰 간단히 채우세요 (level은 "yellow", bristol_score는 4, confidence는 "low").
+not_stool 또는 unclear이면 나머지 필드는 형식만 맞춰 간단히 채우세요 (bristol_score는 4, findings는 모두 false, confidence는 "low").
 
 ## 2단계: 브리스톨 척도 (bristol_score)
 1: 따로 떨어진 딱딱한 덩어리 / 2: 울퉁불퉁한 소시지형 / 3: 표면에 금이 간 소시지형 /
 4: 매끄럽고 부드러운 소시지형 / 5: 경계가 뚜렷한 부드러운 덩어리 / 6: 경계가 불분명한 죽 같은 변 / 7: 형태 없는 물설사
 사진에 여러 덩어리가 있으면 가장 대표적인 형태를 기준으로 하세요.
 
-## 3단계: 판정 기준 (level) — 아래 규칙을 그대로 적용하세요
-- red: 혈액(선홍색 피 또는 검고 끈적한 타르변), 기생충, 플라스틱·천 등 이물, 회백색 변, 또는 브리스톨 7
-- yellow: 브리스톨 1·5·6, 점액, 노랑·주황·초록 등 비정상 색, 소화되지 않은 음식물이 많이 보임
-- green: 브리스톨 2~4이고 갈색 계열이며 위 이상 소견이 없음
-여러 항목에 해당하면 더 심각한 쪽을 고르세요.
+## 3단계: 관찰 소견 (findings) — 사진에서 분명히 보일 때만 true
+${FINDINGS_TEXT}
+
+## 판정 규칙 (참고)
+최종 판정(정상/주의/위험)은 앱이 아래 규칙으로 계산합니다. summary와 advice는 이 규칙에 따른 판정과 어긋나지 않게 쓰세요.
+- 위험: 브리스톨 7 또는 위험 소견이 하나라도 true
+- 주의: 브리스톨 1·5·6 또는 주의 소견이 하나라도 true
+- 정상: 그 외 (브리스톨 2~4이고 소견이 모두 false) — 이 경우 summary와 advice에서 건강한 배변으로 안내하세요.
 
 ## 4단계: 신뢰도 (confidence)
 사진 품질(조명, 초점, 거리, 각도)과 판단의 확실성을 기준으로 high/medium/low를 고르고,
@@ -98,16 +112,6 @@ confidence_reason에 이유를 한 문장으로 쓰세요 (예: "조명이 밝�
 - advice: 보호자가 취해야 할 다음 행동 (1~2문장)
 - 사진 속 배변과 관계없는 물체(표지판, 바닥 등)는 이물질로 판단하지 마세요.
 - 모든 문장은 한국어 존댓말로 쓰세요.`;
-}
-
-const LEVEL_RANK: Record<AnalysisLevel, number> = { green: 0, yellow: 1, red: 2 };
-
-// Deterministic floor so the same Bristol score never yields a milder verdict
-// than the rules in the prompt allow.
-function minLevelForBristol(score: BristolScore): AnalysisLevel {
-  if (score === 7) return "red";
-  if (score === 1 || score === 5 || score === 6) return "yellow";
-  return "green";
 }
 
 export async function analyzePoopImage(
@@ -181,11 +185,11 @@ export async function analyzePoopImage(
     throw new InvalidImageError(parsed.image_check, INVALID_IMAGE_MESSAGES[parsed.image_check]);
   }
 
-  const floor = minLevelForBristol(parsed.bristol_score);
-  const level = LEVEL_RANK[parsed.level] >= LEVEL_RANK[floor] ? parsed.level : floor;
+  const { level, reasons } = computeVerdict(parsed.bristol_score, parsed.findings);
 
   return {
     level,
+    level_reasons: reasons,
     bristol_score: parsed.bristol_score,
     confidence: parsed.confidence,
     confidence_reason: parsed.confidence_reason,
