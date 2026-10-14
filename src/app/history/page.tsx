@@ -240,7 +240,10 @@ export default function HistoryPage() {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
                                 <StatusBadge level={e.result.level} />
-                                <span className="text-xs text-stone-400">{timeLabel(e.createdAt)}</span>
+                                <span className="text-xs text-stone-400">
+                                  {timeLabel(e.createdAt)}
+                                  {e.result.bristol_score && ` · 브리스톨 ${e.result.bristol_score}`}
+                                </span>
                               </div>
                               {e.petName && petNames.length > 1 && !petFilter && (
                                 <p className="text-xs text-stone-500 mt-1">{e.petName}</p>

@@ -23,6 +23,7 @@ src/
 ├── components/
 │   ├── UploadZone.tsx         # Camera/gallery picker + preview
 │   ├── ResultCard.tsx         # Color-coded health result
+│   ├── BristolScale.tsx       # 1–7 Bristol stool scale bar
 │   ├── ProfileForm.tsx        # Pet name/age/breed form
 │   └── StatusBadge.tsx        # green/yellow/red badge
 ├── hooks/
@@ -63,10 +64,16 @@ npm run lint     # ESLint
 // Response
 {
   "level": "green" | "yellow" | "red",
+  "bristol_score": 1-7,
+  "confidence": "high" | "medium" | "low",
+  "confidence_reason": "Why this confidence level",
   "summary": "Brief one-sentence verdict",
   "details": { "color": "...", "shape": "...", "foreign_objects": "..." },
   "advice": "What the owner should do next"
 }
+
+// 422 when the photo can't be analyzed (no result is returned or saved)
+{ "error": "Retake message", "code": "not_stool" | "unclear" }
 ```
 
 ## Development Notes
@@ -75,3 +82,4 @@ npm run lint     # ESLint
 - Pet profile is stored in `localStorage` (no backend DB)
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
+- Analysis uses structured outputs (JSON schema) + `temperature: 0`; the level has a code-enforced floor by Bristol score (7 → red, 1/5/6 → at least yellow)
