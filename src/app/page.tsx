@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import UploadZone from "@/components/UploadZone";
 import ProfileForm from "@/components/ProfileForm";
 import { useAnalysis } from "@/hooks/useAnalysis";
+import { addHistoryEntry, makeThumbnail } from "@/lib/history";
 import type { PetProfile } from "@/types";
 
 const DEFAULT_PROFILE: PetProfile = { name: "", age: null, breed: "" };
@@ -34,6 +35,7 @@ export default function HomePage() {
 
     const result = await analyze(image.base64, image.mediaType, profile);
     if (result) {
+      addHistoryEntry(result, profile, await makeThumbnail(image.preview));
       sessionStorage.setItem(
         "poocheck_result",
         JSON.stringify({ result, preview: image.preview, pet: profile })
@@ -52,13 +54,22 @@ export default function HomePage() {
           <span className="text-2xl">💩</span>
           <h1 className="text-lg font-bold text-stone-800">포푸체크</h1>
         </div>
-        <button
-          onClick={() => router.push("/profile")}
-          className="text-xs text-stone-500 flex items-center gap-1 hover:text-amber-600 transition"
-        >
-          <span>🐾</span>
-          <span>프로필</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/history")}
+            className="text-xs text-stone-500 flex items-center gap-1 hover:text-amber-600 transition"
+          >
+            <span>📅</span>
+            <span>기록</span>
+          </button>
+          <button
+            onClick={() => router.push("/profile")}
+            className="text-xs text-stone-500 flex items-center gap-1 hover:text-amber-600 transition"
+          >
+            <span>🐾</span>
+            <span>프로필</span>
+          </button>
+        </div>
       </header>
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
