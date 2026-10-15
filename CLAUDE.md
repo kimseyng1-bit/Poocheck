@@ -16,11 +16,14 @@ src/
 │   ├── api/analyze/route.ts   # POST /api/analyze — image → Claude Vision (daily limits)
 │   ├── api/event/route.ts     # POST /api/event — counts allow-listed client events
 │   ├── api/stats/route.ts     # GET /api/stats — daily usage counters (STATS_TOKEN)
+│   ├── guide/page.tsx         # Symptom guide hub (SEO)
+│   ├── guide/[slug]/page.tsx  # Static symptom guide pages (SEO)
 │   ├── history/page.tsx       # Analysis history timeline + 30-day summary
 │   ├── profile/page.tsx       # Pet profile setup
 │   ├── result/page.tsx        # Analysis result display
 │   ├── layout.tsx             # Root layout (mobile viewport, fonts)
 │   ├── page.tsx               # Home — photo upload
+│   ├── sitemap.ts / robots.ts / manifest.ts
 │   └── globals.css
 ├── components/
 │   ├── UploadZone.tsx         # Camera/gallery picker + preview
@@ -29,6 +32,8 @@ src/
 │   ├── VetCard.tsx            # Vet guidance for yellow/red: map links + summary share
 │   ├── ProfileForm.tsx        # Pet name/age/breed form
 │   └── StatusBadge.tsx        # green/yellow/red badge
+├── content/
+│   └── guides.ts              # Guide page content + verified sources
 ├── hooks/
 │   └── useAnalysis.ts         # Client-side analysis state machine
 ├── lib/
@@ -36,6 +41,7 @@ src/
 │   ├── verdict.ts             # green/yellow/red rules (Bristol + findings → level)
 │   ├── vet.ts                 # Kakao/Naver map search links + vet summary text
 │   ├── store.ts               # Counter store: Upstash Redis, in-memory fallback
+│   ├── site.ts                # SITE_URL (NEXT_PUBLIC_SITE_URL) for metadata/sitemap
 │   ├── usage.ts               # Daily analysis limits + usage stats
 │   ├── device.ts              # Anonymous device id, remaining quota, event beacon
 │   └── history.ts             # localStorage history store (max 60, thumbnails)
@@ -50,6 +56,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 KV_REST_API_URL / KV_REST_API_TOKEN   # Upstash Redis (Vercel Marketplace sets these)
 STATS_TOKEN=...                       # enables GET /api/stats?token=...
 RATE_LIMIT_PER_DEVICE_DAILY=10        # optional; also _PER_IP_DAILY=30, _GLOBAL_DAILY=1000
+NEXT_PUBLIC_SITE_URL=https://...      # optional; canonical URL (default poocheck.vercel.app)
+GOOGLE_SITE_VERIFICATION / NAVER_SITE_VERIFICATION  # optional search console tags
 ```
 Without Redis, limits and stats fall back to per-instance memory (dev only).
 Redis keys are prefixed `poocheck:` (the database may be shared). If Redis errors, writes fall back to memory so analyses keep working.
@@ -101,4 +109,5 @@ npm run lint     # ESLint
 - Vet finder uses map app search links only (no geolocation, no API key); the map app uses the viewer's own location
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
+- Guide content lives in `src/content/guides.ts`: cite only sources you have opened, keep each `appRule` in sync with `verdict.ts`, and set `reviewedBy` only after a real veterinarian review
 - Analysis uses structured outputs (JSON schema) + `temperature: 0`. Claude reports only the Bristol score and yes/no findings; the level is computed by `src/lib/verdict.ts` (change verdict rules there, not in the prompt)

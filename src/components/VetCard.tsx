@@ -37,7 +37,7 @@ function MapLink({ href, children, primary }: { href: string; children: React.Re
 
 // Both map apps side by side: owners usually have one or the other installed,
 // and each opens its own app (or mobile web) with the viewer's location.
-function MapButtons({ query, label, primary }: { query: string; label: string; primary?: boolean }) {
+export function MapButtons({ query, label, primary }: { query: string; label: string; primary?: boolean }) {
   return (
     <div className="space-y-1.5">
       <p className={`text-xs font-semibold ${primary ? "text-red-700" : "text-stone-500"}`}>{label}</p>
