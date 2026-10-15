@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UploadZone from "@/components/UploadZone";
 import ProfileForm from "@/components/ProfileForm";
@@ -148,6 +149,14 @@ export default function HomePage() {
         <p className="text-center text-xs text-stone-400">
           이 앱은 수의사 진단을 대체하지 않습니다.
         </p>
+
+        <Link
+          href="/guide"
+          className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 shadow-sm hover:bg-stone-50 transition"
+        >
+          <span className="text-sm font-semibold text-stone-700">📖 강아지 변 색깔·모양 가이드</span>
+          <span className="text-stone-400">›</span>
+        </Link>
       </div>
     </main>
   );
