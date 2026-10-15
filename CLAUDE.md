@@ -107,7 +107,8 @@ npm run lint     # ESLint
 
 ## Development Notes
 - All pages are mobile-first (max-w-md centered)
-- Image is converted to base64 before sending to Claude
+- Images are resized in the browser to a 1024px long edge (JPEG) before upload — Claude bills images by pixel count; the API rejects payloads over ~1.5 MB (413)
+- Every Claude call adds its input/output tokens to the daily stats; `/api/stats` shows `per_call` averages and estimated USD (`MODEL_PRICE_PER_MTOK` in `usage.ts` must match the model in `claude.ts`)
 - Pet profile is stored in `localStorage` (no backend DB)
 - Daily limits are counted before calling Claude (rejected photos still cost a call); the client sends an anonymous `X-Device-Id`
 - Vet finder uses map app search links only (no geolocation, no API key); the map app uses the viewer's own location

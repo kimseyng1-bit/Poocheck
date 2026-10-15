@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AnalysisFindings, AnalysisResult, BristolScore, PetProfile } from "@/types";
 import { computeVerdict, FINDING_KEYS, FINDINGS } from "@/lib/verdict";
+import { recordUsage } from "@/lib/usage";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -134,7 +135,7 @@ export async function analyzePoopImage(
     : "image/jpeg";
 
   const message = await anthropic.messages.create({
-    model: "claude-opus-4-5",
+    model: "claude-opus-4-5", // keep MODEL_PRICE_PER_MTOK in usage.ts in sync
     max_tokens: 2048,
     // Same photo → same verdict as far as possible.
     temperature: 0,
@@ -161,6 +162,8 @@ export async function analyzePoopImage(
       },
     ],
   });
+
+  await recordUsage(message.usage);
 
   if (message.stop_reason === "refusal") {
     throw new Error("이 사진은 분석할 수 없어요. 다른 사진으로 다시 시도해주세요.");

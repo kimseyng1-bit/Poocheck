@@ -10,19 +10,21 @@ interface Props {
 // Compress via Canvas — fixes iOS Safari "string did not match expected pattern"
 // error caused by fetch rejecting oversized base64 payloads from high-res
 // iPhone camera photos (12–48 MP → 10–20 MB base64).
+// The long edge is capped at 1024px: Claude bills images by pixel count
+// (~width×height/750 tokens), so this keeps a photo near 1,050 tokens instead
+// of ~1,600 while leaving small findings (worm segments, blood streaks) visible.
 function compressImage(
   dataUrl: string,
-  maxWidth = 1280,
+  maxSide = 1024,
   quality = 0.82
 ): Promise<string> {
   return new Promise((resolve) => {
     const img = new window.Image();
     img.onload = () => {
       let { width, height } = img;
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
