@@ -1,23 +1,12 @@
 import { store } from "@/lib/store";
+import { LIMITS } from "@/lib/limits";
+
+export { LIMITS };
 
 // Daily analysis limits and usage counters. Days roll over at midnight KST.
 
 const DAY_TTL = 60 * 60 * 26; // a little over a day so late requests still count
 const STATS_TTL = 60 * 60 * 24 * 120; // keep daily stats ~4 months
-
-function envInt(name: string, fallback: number) {
-  const n = Number(process.env[name]);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-}
-
-export const LIMITS = {
-  // One phone/browser. The main limit users will notice.
-  perDevice: envInt("RATE_LIMIT_PER_DEVICE_DAILY", 10),
-  // Looser, because mobile carriers put many phones behind one IP.
-  perIp: envInt("RATE_LIMIT_PER_IP_DAILY", 30),
-  // Hard budget cap for the whole service.
-  global: envInt("RATE_LIMIT_GLOBAL_DAILY", 1000),
-};
 
 export function kstDay(date = new Date()) {
   return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);

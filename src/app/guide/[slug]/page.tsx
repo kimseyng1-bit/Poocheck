@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LegalLinks } from "@/components/LegalPage";
 import { MapButtons } from "@/components/VetCard";
 import { GUIDES, getGuide } from "@/content/guides";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -157,6 +158,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
             {guide.reviewedBy ? `감수: ${guide.reviewedBy}` : "위 참고 자료를 바탕으로 정리했으며, 아직 수의사 감수를 거치지 않았어요."}
           </p>
           <p>이 글은 일반적인 정보이며 수의사의 진단을 대체하지 않습니다.</p>
+          <LegalLinks />
         </footer>
       </article>
     </main>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { LegalLinks } from "@/components/LegalPage";
 import { useRouter } from "next/navigation";
 import UploadZone from "@/components/UploadZone";
 import ProfileForm from "@/components/ProfileForm";
@@ -146,8 +147,10 @@ export default function HomePage() {
           <p className="text-center text-xs text-amber-700">오늘 남은 분석 횟수: {remaining}회</p>
         )}
 
-        <p className="text-center text-xs text-stone-400">
+        <p className="text-center text-xs text-stone-400 leading-relaxed">
           이 앱은 수의사 진단을 대체하지 않습니다.
+          <br />
+          사진은 분석을 위해 AI 서비스(Anthropic, 미국)로 전송되며 포푸체크 서버에는 저장되지 않아요.
         </p>
 
         <Link
@@ -157,6 +160,8 @@ export default function HomePage() {
           <span className="text-sm font-semibold text-stone-700">📖 강아지 변 색깔·모양 가이드</span>
           <span className="text-stone-400">›</span>
         </Link>
+
+        <LegalLinks />
       </div>
     </main>
   );
