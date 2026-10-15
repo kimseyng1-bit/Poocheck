@@ -13,6 +13,10 @@ const LIMIT_MESSAGES: Record<LimitReason, string> = {
   global: "오늘 이용량이 많아 분석을 잠시 멈췄어요. 내일 다시 이용해주세요.",
 };
 
+// The client sends a JPEG with a 1024px long edge (a few hundred KB). Anything
+// far larger skipped that compression and would cost more image tokens.
+const MAX_IMAGE_BASE64_CHARS = 2_000_000; // ~1.5 MB decoded
+
 function clientIp(req: NextRequest) {
   const forwarded = req.headers.get("x-forwarded-for");
   return forwarded?.split(",")[0].trim() || req.headers.get("x-real-ip") || null;
@@ -30,6 +34,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalyzeRespon
 
     if (!imageBase64 || typeof imageBase64 !== "string") {
       return NextResponse.json({ error: "이미지 데이터가 없습니다." }, { status: 400 });
+    }
+    if (imageBase64.length > MAX_IMAGE_BASE64_CHARS) {
+      return NextResponse.json(
+        { error: "사진 용량이 너무 커요. 페이지를 새로고침한 뒤 다시 올려주세요." },
+        { status: 413 }
+      );
     }
     if (!pet || typeof pet !== "object") {
       return NextResponse.json({ error: "반려견 정보가 없습니다." }, { status: 400 });

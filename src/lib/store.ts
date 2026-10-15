@@ -9,7 +9,7 @@ import { Redis } from "@upstash/redis";
 
 interface CounterStore {
   incr(key: string, ttlSeconds: number): Promise<number>;
-  hincr(key: string, field: string, ttlSeconds: number): Promise<void>;
+  hincr(key: string, field: string, ttlSeconds: number, by?: number): Promise<void>;
   hgetall(key: string): Promise<Record<string, number>>;
 }
 
@@ -37,9 +37,9 @@ class RedisStore implements CounterStore {
     return count;
   }
 
-  async hincr(key: string, field: string, ttlSeconds: number) {
+  async hincr(key: string, field: string, ttlSeconds: number, by = 1) {
     const k = KEY_PREFIX + key;
-    await this.redis.pipeline().hincrby(k, field, 1).expire(k, ttlSeconds).exec();
+    await this.redis.pipeline().hincrby(k, field, by).expire(k, ttlSeconds).exec();
   }
 
   async hgetall(key: string) {
@@ -60,11 +60,11 @@ class MemoryStore implements CounterStore {
     return value;
   }
 
-  async hincr(key: string, field: string, ttlSeconds: number) {
+  async hincr(key: string, field: string, ttlSeconds: number, by = 1) {
     const now = Date.now();
     const cur = this.hashes.get(key);
     const fields = cur && cur.expiresAt > now ? cur.fields : {};
-    fields[field] = (fields[field] ?? 0) + 1;
+    fields[field] = (fields[field] ?? 0) + by;
     this.hashes.set(key, { fields, expiresAt: now + ttlSeconds * 1000 });
   }
 
@@ -91,12 +91,12 @@ class FallbackStore implements CounterStore {
     }
   }
 
-  async hincr(key: string, field: string, ttlSeconds: number) {
+  async hincr(key: string, field: string, ttlSeconds: number, by = 1) {
     try {
-      await this.primary.hincr(key, field, ttlSeconds);
+      await this.primary.hincr(key, field, ttlSeconds, by);
     } catch (err) {
       console.error("[store] Redis hincr failed, using memory:", err);
-      await this.memory.hincr(key, field, ttlSeconds);
+      await this.memory.hincr(key, field, ttlSeconds, by);
     }
   }
 

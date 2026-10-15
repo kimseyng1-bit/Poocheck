@@ -46,19 +46,36 @@ export const STAT_FIELDS = [
   "limited_global",
   "vet_map_click",
   "share_summary",
+  "claude_calls",
+  "input_tokens",
+  "output_tokens",
 ] as const;
 export type StatField = (typeof STAT_FIELDS)[number];
 
 export const CLIENT_EVENTS: StatField[] = ["vet_map_click", "share_summary"];
 
-export async function recordStat(field: StatField) {
+export async function recordStat(field: StatField, by = 1) {
   try {
-    await store.hincr(`stats:${kstDay()}`, field, STATS_TTL);
+    await store.hincr(`stats:${kstDay()}`, field, STATS_TTL, by);
   } catch (err) {
     // Stats must never break an analysis.
     console.error("[usage] failed to record stat", field, err);
   }
 }
+
+// Token usage of every Claude call, including photos rejected as not stool,
+// so /api/stats can show what one analysis really costs.
+export async function recordUsage(usage: { input_tokens: number; output_tokens: number }) {
+  await Promise.all([
+    recordStat("claude_calls"),
+    recordStat("input_tokens", usage.input_tokens),
+    recordStat("output_tokens", usage.output_tokens),
+  ]);
+}
+
+// List prices of the analysis model (USD per million tokens), used only to
+// estimate cost in /api/stats. Update together with the model in claude.ts.
+export const MODEL_PRICE_PER_MTOK = { input: 5, output: 25 };
 
 export async function readStats(days: number) {
   const out: Array<{ day: string } & Partial<Record<StatField, number>>> = [];
