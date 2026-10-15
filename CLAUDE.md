@@ -52,6 +52,7 @@ STATS_TOKEN=...                       # enables GET /api/stats?token=...
 RATE_LIMIT_PER_DEVICE_DAILY=10        # optional; also _PER_IP_DAILY=30, _GLOBAL_DAILY=1000
 ```
 Without Redis, limits and stats fall back to per-instance memory (dev only).
+Redis keys are prefixed `poocheck:` (the database may be shared). If Redis errors, writes fall back to memory so analyses keep working.
 
 ## Key Commands
 ```bash
