@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLinks } from "@/components/LegalPage";
-import { GUIDES } from "@/content/guides";
+import { GUIDE_CATEGORIES, GUIDES, type GuideCategory } from "@/content/guides";
 
 export const metadata: Metadata = {
   title: "강아지 변 색깔·모양 가이드",
@@ -16,8 +16,8 @@ const COLOR_ROWS = [
   { swatch: "bg-stone-900", label: "검정·타르", meaning: "위장 출혈 가능 — 진료", slug: "black-stool" },
   { swatch: "bg-red-500", label: "붉은 피", meaning: "장 아래쪽 출혈 가능", slug: "blood" },
   { swatch: "bg-yellow-400", label: "노랑·주황", meaning: "설사·간·담도 문제", slug: "yellow-stool" },
-  { swatch: "bg-green-600", label: "초록", meaning: "풀 섭취·담낭 문제", slug: "stool-color" },
-  { swatch: "bg-stone-300", label: "회색·흰색", meaning: "췌장·담도 문제 — 진료", slug: "stool-color" },
+  { swatch: "bg-green-600", label: "초록", meaning: "풀 섭취·쥐약 주의", slug: "green-stool" },
+  { swatch: "bg-stone-300", label: "회색·흰색", meaning: "췌장·담도 문제 — 진료", slug: "white-gray-stool" },
   { swatch: "bg-stone-50 border border-stone-300", label: "흰 쌀알", meaning: "촌충 마디일 수 있어요", slug: "worms" },
 ];
 
@@ -65,24 +65,26 @@ export default function GuideIndexPage() {
           📷 사진으로 바로 확인해 보기
         </Link>
 
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-stone-600 px-1">증상별 가이드</h2>
-          <div className="grid grid-cols-1 gap-2">
-            {GUIDES.map((g) => (
-              <Link
-                key={g.slug}
-                href={`/guide/${g.slug}`}
-                className="flex gap-3 bg-white rounded-2xl p-4 shadow-sm hover:bg-stone-50 transition"
-              >
-                <span className="text-2xl shrink-0">{g.emoji}</span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-stone-800">{g.title}</p>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{g.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {(Object.keys(GUIDE_CATEGORIES) as GuideCategory[]).map((cat) => (
+          <section key={cat} className="space-y-2">
+            <h2 className="text-sm font-semibold text-stone-600 px-1">{GUIDE_CATEGORIES[cat]}</h2>
+            <div className="grid grid-cols-1 gap-2">
+              {GUIDES.filter((g) => g.category === cat).map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/guide/${g.slug}`}
+                  className="flex gap-3 bg-white rounded-2xl p-4 shadow-sm hover:bg-stone-50 transition"
+                >
+                  <span className="text-2xl shrink-0">{g.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-stone-800">{g.title}</p>
+                    <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{g.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
 
         <p className="text-center text-xs text-stone-400">
           이 가이드는 일반적인 정보이며 수의사의 진단을 대체하지 않습니다.

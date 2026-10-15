@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { guideForReason, NORMAL_GUIDE } from "@/lib/verdict";
 import type { AnalysisResult } from "@/types";
 import StatusBadge from "./StatusBadge";
 import BristolScale from "./BristolScale";
@@ -57,6 +59,7 @@ export default function ResultCard({ result, petName }: Props) {
             : "브리스톨 2~4단계, 이상 소견 없음"}
         </p>
       )}
+      {result.level_reasons && <GuideLinks reasons={result.level_reasons} />}
 
       {/* Bristol scale */}
       {result.bristol_score && <BristolScale score={result.bristol_score} />}
@@ -89,6 +92,32 @@ export default function ResultCard({ result, petName }: Props) {
         <p className="text-xs text-stone-400 font-medium mb-1">권고 사항</p>
         <p className="text-sm text-stone-700 leading-relaxed">{result.advice}</p>
       </div>
+    </div>
+  );
+}
+
+// One link per distinct guide behind the verdict; green links to the normal-stool guide.
+function GuideLinks({ reasons }: { reasons: string[] }) {
+  const links =
+    reasons.length === 0
+      ? [{ slug: NORMAL_GUIDE, label: "건강한 변 기준" }]
+      : reasons.flatMap((label) => {
+          const slug = guideForReason(label);
+          return slug ? [{ slug, label: label.replace(/\(.*\)$/, "") }] : [];
+        });
+  const unique = links.filter((l, i) => links.findIndex((x) => x.slug === l.slug) === i);
+  if (unique.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2 -mt-2">
+      {unique.map((l) => (
+        <Link
+          key={l.slug}
+          href={`/guide/${l.slug}`}
+          className="text-xs font-medium text-amber-800 bg-white/80 border border-amber-200 rounded-full px-3 py-1 hover:bg-amber-50 transition"
+        >
+          📖 {l.label} 알아보기 ›
+        </Link>
+      ))}
     </div>
   );
 }

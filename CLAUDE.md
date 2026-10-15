@@ -36,7 +36,7 @@ src/
 │   ├── ProfileForm.tsx        # Pet name/age/breed form
 │   └── StatusBadge.tsx        # green/yellow/red badge
 ├── content/
-│   └── guides.ts              # Guide page content + verified sources
+│   └── guides/                # Guide pages: index (types, GUIDES), sources.ts, color/shape/other.ts
 ├── hooks/
 │   └── useAnalysis.ts         # Client-side analysis state machine
 ├── lib/
@@ -115,5 +115,5 @@ npm run lint     # ESLint
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
 - The privacy policy (`/privacy`) describes exactly what the code collects, keeps and sends abroad (Anthropic, Vercel, Upstash). When you add data collection, a processor, or change retention (e.g. TTLs in `usage.ts`), update the policy and `LEGAL_EFFECTIVE_DATE` in the same change
-- Guide content lives in `src/content/guides.ts`: cite only sources you have opened, keep each `appRule` in sync with `verdict.ts`, and set `reviewedBy` only after a real veterinarian review
+- Guide content lives in `src/content/guides/` (one file per category, sources in `sources.ts`): cite only sources you have opened, keep each `appRule` and each finding's `guide` slug in `verdict.ts` in sync, and set `reviewedBy` only after a real veterinarian review
 - Analysis uses structured outputs (JSON schema) + `temperature: 0`. Claude reports only the Bristol score and yes/no findings; the level is computed by `src/lib/verdict.ts` (change verdict rules there, not in the prompt)
