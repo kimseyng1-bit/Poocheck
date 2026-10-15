@@ -19,6 +19,8 @@ src/
 │   ├── guide/page.tsx         # Symptom guide hub (SEO)
 │   ├── guide/[slug]/page.tsx  # Static symptom guide pages (SEO)
 │   ├── history/page.tsx       # Analysis history timeline + 30-day summary
+│   ├── privacy/page.tsx       # 개인정보처리방침
+│   ├── terms/page.tsx         # 이용약관
 │   ├── profile/page.tsx       # Pet profile setup
 │   ├── result/page.tsx        # Analysis result display
 │   ├── layout.tsx             # Root layout (mobile viewport, fonts)
@@ -30,6 +32,7 @@ src/
 │   ├── ResultCard.tsx         # Color-coded health result
 │   ├── BristolScale.tsx       # 1–7 Bristol stool scale bar
 │   ├── VetCard.tsx            # Vet guidance for yellow/red: map links + summary share
+│   ├── LegalPage.tsx          # Layout + footer links for privacy/terms
 │   ├── ProfileForm.tsx        # Pet name/age/breed form
 │   └── StatusBadge.tsx        # green/yellow/red badge
 ├── content/
@@ -41,8 +44,9 @@ src/
 │   ├── verdict.ts             # green/yellow/red rules (Bristol + findings → level)
 │   ├── vet.ts                 # Kakao/Naver map search links + vet summary text
 │   ├── store.ts               # Counter store: Upstash Redis, in-memory fallback
-│   ├── site.ts                # SITE_URL (NEXT_PUBLIC_SITE_URL) for metadata/sitemap
+│   ├── site.ts                # SITE_URL, operator name, contact email, legal effective date
 │   ├── usage.ts               # Daily analysis limits + usage stats
+│   ├── limits.ts              # Limit values (env-configurable)
 │   ├── device.ts              # Anonymous device id, remaining quota, event beacon
 │   └── history.ts             # localStorage history store (max 60, thumbnails)
 └── types/
@@ -109,5 +113,6 @@ npm run lint     # ESLint
 - Vet finder uses map app search links only (no geolocation, no API key); the map app uses the viewer's own location
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
+- The privacy policy (`/privacy`) describes exactly what the code collects, keeps and sends abroad (Anthropic, Vercel, Upstash). When you add data collection, a processor, or change retention (e.g. TTLs in `usage.ts`), update the policy and `LEGAL_EFFECTIVE_DATE` in the same change
 - Guide content lives in `src/content/guides.ts`: cite only sources you have opened, keep each `appRule` in sync with `verdict.ts`, and set `reviewedBy` only after a real veterinarian review
 - Analysis uses structured outputs (JSON schema) + `temperature: 0`. Claude reports only the Bristol score and yes/no findings; the level is computed by `src/lib/verdict.ts` (change verdict rules there, not in the prompt)

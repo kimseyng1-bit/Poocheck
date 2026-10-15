@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LegalLinks } from "@/components/LegalPage";
 import { GUIDES } from "@/content/guides";
 
 export const metadata: Metadata = {
@@ -83,9 +84,10 @@ export default function GuideIndexPage() {
           </div>
         </section>
 
-        <p className="text-center text-xs text-stone-400 pb-4">
+        <p className="text-center text-xs text-stone-400">
           이 가이드는 일반적인 정보이며 수의사의 진단을 대체하지 않습니다.
         </p>
+        <LegalLinks />
       </div>
     </main>
   );
