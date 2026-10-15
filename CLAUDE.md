@@ -24,6 +24,7 @@ src/
 │   ├── UploadZone.tsx         # Camera/gallery picker + preview
 │   ├── ResultCard.tsx         # Color-coded health result
 │   ├── BristolScale.tsx       # 1–7 Bristol stool scale bar
+│   ├── VetCard.tsx            # Vet guidance for yellow/red: map links + summary share
 │   ├── ProfileForm.tsx        # Pet name/age/breed form
 │   └── StatusBadge.tsx        # green/yellow/red badge
 ├── hooks/
@@ -31,6 +32,7 @@ src/
 ├── lib/
 │   ├── claude.ts              # Anthropic client + analysis prompt
 │   ├── verdict.ts             # green/yellow/red rules (Bristol + findings → level)
+│   ├── vet.ts                 # Kakao/Naver map search links + vet summary text
 │   └── history.ts             # localStorage history store (max 60, thumbnails)
 └── types/
     └── index.ts               # Shared TypeScript types
@@ -82,6 +84,7 @@ npm run lint     # ESLint
 - All pages are mobile-first (max-w-md centered)
 - Image is converted to base64 before sending to Claude
 - Pet profile is stored in `localStorage` (no backend DB)
+- Vet finder uses map app search links only (no geolocation, no API key); the map app uses the viewer's own location
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there
 - Analysis uses structured outputs (JSON schema) + `temperature: 0`. Claude reports only the Bristol score and yes/no findings; the level is computed by `src/lib/verdict.ts` (change verdict rules there, not in the prompt)
