@@ -16,8 +16,8 @@ const COLOR_ROWS = [
   { swatch: "bg-stone-900", label: "검정·타르", meaning: "위장 출혈 가능 — 진료", slug: "black-stool" },
   { swatch: "bg-red-500", label: "붉은 피", meaning: "장 아래쪽 출혈 가능", slug: "blood" },
   { swatch: "bg-yellow-400", label: "노랑·주황", meaning: "설사·간·담도 문제", slug: "yellow-stool" },
-  { swatch: "bg-green-600", label: "초록", meaning: "풀 섭취·담낭 문제", slug: "stool-color" },
-  { swatch: "bg-stone-300", label: "회색·흰색", meaning: "췌장·담도 문제 — 진료", slug: "stool-color" },
+  { swatch: "bg-green-600", label: "초록", meaning: "풀 섭취·쥐약 주의", slug: "green-stool" },
+  { swatch: "bg-stone-300", label: "회색·흰색", meaning: "췌장·담도 문제 — 진료", slug: "white-gray-stool" },
   { swatch: "bg-stone-50 border border-stone-300", label: "흰 쌀알", meaning: "촌충 마디일 수 있어요", slug: "worms" },
 ];
 
