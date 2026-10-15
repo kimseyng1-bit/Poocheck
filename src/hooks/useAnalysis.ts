@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { AnalysisResult, PetProfile } from "@/types";
+import { getDeviceId, saveRemaining } from "@/lib/device";
+import type { AnalysisResult, AnalyzeResponse, PetProfile } from "@/types";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -21,17 +22,20 @@ export function useAnalysis() {
   async function analyze(imageBase64: string, mediaType: string, pet: PetProfile) {
     setState({ status: "loading", result: null, error: null });
     try {
+      const deviceId = getDeviceId();
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(deviceId ? { "X-Device-Id": deviceId } : {}) },
         body: JSON.stringify({ imageBase64, mediaType, pet }),
       });
-      const data = await res.json();
-      if (!res.ok || data.error) {
+      const data: AnalyzeResponse = await res.json();
+      if (!res.ok || data.error || !data.result) {
+        if (data.code === "rate_limited") saveRemaining(0);
         throw new Error(data.error ?? "분석 중 오류가 발생했습니다.");
       }
+      if (typeof data.remaining === "number") saveRemaining(data.remaining);
       setState({ status: "success", result: data.result, error: null });
-      return data.result as AnalysisResult;
+      return data.result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "알 수 없는 오류";
       setState({ status: "error", result: null, error: msg });

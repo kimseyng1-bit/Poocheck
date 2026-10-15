@@ -58,5 +58,6 @@ export interface AnalyzeRequest {
 export interface AnalyzeResponse {
   result?: AnalysisResult;
   error?: string;
-  code?: "not_stool" | "unclear";
+  code?: "not_stool" | "unclear" | "rate_limited";
+  remaining?: number; // analyses left today on this device
 }

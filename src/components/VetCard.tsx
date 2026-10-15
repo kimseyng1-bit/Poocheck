@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AnalysisLevel } from "@/types";
 import { kakaoMapSearch, naverMapSearch } from "@/lib/vet";
+import { trackEvent } from "@/lib/device";
 
 interface Props {
   level: AnalysisLevel;
@@ -23,6 +24,7 @@ function MapLink({ href, children, primary }: { href: string; children: React.Re
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => trackEvent("vet_map_click")}
       className={[
         "flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-semibold text-sm shadow-sm active:scale-95 transition",
         primary ? "bg-red-500 text-white hover:bg-red-600" : "bg-white text-stone-700 border border-stone-200 hover:bg-stone-50",
@@ -51,6 +53,7 @@ function ShareSummaryButton({ summary }: { summary: string }) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
+    trackEvent("share_summary");
     if (navigator.share) {
       try {
         await navigator.share({ title: "포푸체크 배변 분석 요약", text: summary });
