@@ -13,7 +13,9 @@ PooCheck is a mobile-first web app that lets dog owners upload a photo of their 
 ```
 src/
 ├── app/
-│   ├── api/analyze/route.ts   # POST /api/analyze — image → Claude Vision
+│   ├── api/analyze/route.ts   # POST /api/analyze — image → Claude Vision (daily limits)
+│   ├── api/event/route.ts     # POST /api/event — counts allow-listed client events
+│   ├── api/stats/route.ts     # GET /api/stats — daily usage counters (STATS_TOKEN)
 │   ├── history/page.tsx       # Analysis history timeline + 30-day summary
 │   ├── profile/page.tsx       # Pet profile setup
 │   ├── result/page.tsx        # Analysis result display
@@ -33,6 +35,9 @@ src/
 │   ├── claude.ts              # Anthropic client + analysis prompt
 │   ├── verdict.ts             # green/yellow/red rules (Bristol + findings → level)
 │   ├── vet.ts                 # Kakao/Naver map search links + vet summary text
+│   ├── store.ts               # Counter store: Upstash Redis, in-memory fallback
+│   ├── usage.ts               # Daily analysis limits + usage stats
+│   ├── device.ts              # Anonymous device id, remaining quota, event beacon
 │   └── history.ts             # localStorage history store (max 60, thumbnails)
 └── types/
     └── index.ts               # Shared TypeScript types
@@ -42,7 +47,11 @@ src/
 Copy `.env.example` to `.env.local` and fill in:
 ```
 ANTHROPIC_API_KEY=sk-ant-...
+KV_REST_API_URL / KV_REST_API_TOKEN   # Upstash Redis (Vercel Marketplace sets these)
+STATS_TOKEN=...                       # enables GET /api/stats?token=...
+RATE_LIMIT_PER_DEVICE_DAILY=10        # optional; also _PER_IP_DAILY=30, _GLOBAL_DAILY=1000
 ```
+Without Redis, limits and stats fall back to per-instance memory (dev only).
 
 ## Key Commands
 ```bash
@@ -76,14 +85,18 @@ npm run lint     # ESLint
   "advice": "What the owner should do next"
 }
 
+// Success also includes "remaining": analyses left today for this device
 // 422 when the photo can't be analyzed (no result is returned or saved)
 { "error": "Retake message", "code": "not_stool" | "unclear" }
+// 429 when a daily limit (device / IP / global) is reached
+{ "error": "Limit message", "code": "rate_limited" }
 ```
 
 ## Development Notes
 - All pages are mobile-first (max-w-md centered)
 - Image is converted to base64 before sending to Claude
 - Pet profile is stored in `localStorage` (no backend DB)
+- Daily limits are counted before calling Claude (rejected photos still cost a call); the client sends an anonymous `X-Device-Id`
 - Vet finder uses map app search links only (no geolocation, no API key); the map app uses the viewer's own location
 - Analysis history (result + small thumbnail) is stored in `localStorage` under `poocheck_history`
 - The Claude prompt is in `src/lib/claude.ts` — tune it there

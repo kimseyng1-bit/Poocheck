@@ -6,6 +6,7 @@ import UploadZone from "@/components/UploadZone";
 import ProfileForm from "@/components/ProfileForm";
 import { useAnalysis } from "@/hooks/useAnalysis";
 import { addHistoryEntry, makeThumbnail } from "@/lib/history";
+import { loadRemaining } from "@/lib/device";
 import type { PetProfile } from "@/types";
 
 const DEFAULT_PROFILE: PetProfile = { name: "", age: null, breed: "" };
@@ -17,12 +18,14 @@ export default function HomePage() {
   const [image, setImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null);
   const [profile, setProfile] = useState<PetProfile>(DEFAULT_PROFILE);
   const [showProfile, setShowProfile] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("poocheck_profile");
     if (saved) {
       try { setProfile(JSON.parse(saved)); } catch {}
     }
+    setRemaining(loadRemaining());
   }, []);
 
   function handleImageSelected(base64: string, mediaType: string, preview: string) {
@@ -34,6 +37,7 @@ export default function HomePage() {
     localStorage.setItem("poocheck_profile", JSON.stringify(profile));
 
     const result = await analyze(image.base64, image.mediaType, profile);
+    setRemaining(loadRemaining());
     if (result) {
       addHistoryEntry(result, profile, await makeThumbnail(image.preview));
       sessionStorage.setItem(
@@ -136,6 +140,10 @@ export default function HomePage() {
             "💩 분석 시작"
           )}
         </button>
+
+        {remaining !== null && remaining <= 3 && (
+          <p className="text-center text-xs text-amber-700">오늘 남은 분석 횟수: {remaining}회</p>
+        )}
 
         <p className="text-center text-xs text-stone-400">
           이 앱은 수의사 진단을 대체하지 않습니다.
