@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ResultCard from "@/components/ResultCard";
+import VetCard from "@/components/VetCard";
+import { loadHistory } from "@/lib/history";
+import { buildVetSummary } from "@/lib/vet";
 import type { AnalysisResult, PetProfile } from "@/types";
 
 interface StoredData {
@@ -29,6 +32,11 @@ export default function ResultPage() {
       router.replace("/");
     }
   }, [router]);
+
+  const vetSummary = useMemo(
+    () => (data ? buildVetSummary(data.result, data.pet, data.createdAt ?? new Date().toISOString(), loadHistory()) : ""),
+    [data]
+  );
 
   if (!data) return null;
 
@@ -73,8 +81,13 @@ export default function ResultPage() {
           </p>
         )}
 
+        {/* Red: vet guidance comes first */}
+        {data.result.level === "red" && <VetCard level="red" summary={vetSummary} />}
+
         {/* Result */}
         <ResultCard result={data.result} petName={data.pet.name || undefined} />
+
+        {data.result.level === "yellow" && <VetCard level="yellow" summary={vetSummary} />}
 
         {/* Actions */}
         <button

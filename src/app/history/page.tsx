@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import StatusBadge from "@/components/StatusBadge";
 import { clearHistory, deleteHistoryEntry, loadHistory } from "@/lib/history";
+import { kakaoMapSearch } from "@/lib/vet";
 import type { AnalysisLevel, HistoryEntry } from "@/types";
 
 const DOT_COLOR: Record<AnalysisLevel, string> = {
@@ -202,7 +203,15 @@ export default function HistoryPage() {
 
               {stats.streak >= 2 && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-                  최근 {stats.streak}회 연속으로 주의·위험 판정이 나왔어요. 증상이 계속되면 수의사 상담을 권해요.
+                  최근 {stats.streak}회 연속으로 주의·위험 판정이 나왔어요. 증상이 계속되면 수의사 상담을 권해요.{" "}
+                  <a
+                    href={kakaoMapSearch("동물병원")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline whitespace-nowrap"
+                  >
+                    근처 동물병원 찾기 →
+                  </a>
                 </div>
               )}
             </section>
