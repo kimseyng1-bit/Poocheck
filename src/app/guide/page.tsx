@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLinks } from "@/components/LegalPage";
-import { GUIDES } from "@/content/guides";
+import { GUIDE_CATEGORIES, GUIDES, type GuideCategory } from "@/content/guides";
 
 export const metadata: Metadata = {
   title: "강아지 변 색깔·모양 가이드",
@@ -65,24 +65,26 @@ export default function GuideIndexPage() {
           📷 사진으로 바로 확인해 보기
         </Link>
 
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-stone-600 px-1">증상별 가이드</h2>
-          <div className="grid grid-cols-1 gap-2">
-            {GUIDES.map((g) => (
-              <Link
-                key={g.slug}
-                href={`/guide/${g.slug}`}
-                className="flex gap-3 bg-white rounded-2xl p-4 shadow-sm hover:bg-stone-50 transition"
-              >
-                <span className="text-2xl shrink-0">{g.emoji}</span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-stone-800">{g.title}</p>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{g.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {(Object.keys(GUIDE_CATEGORIES) as GuideCategory[]).map((cat) => (
+          <section key={cat} className="space-y-2">
+            <h2 className="text-sm font-semibold text-stone-600 px-1">{GUIDE_CATEGORIES[cat]}</h2>
+            <div className="grid grid-cols-1 gap-2">
+              {GUIDES.filter((g) => g.category === cat).map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/guide/${g.slug}`}
+                  className="flex gap-3 bg-white rounded-2xl p-4 shadow-sm hover:bg-stone-50 transition"
+                >
+                  <span className="text-2xl shrink-0">{g.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-stone-800">{g.title}</p>
+                    <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{g.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
 
         <p className="text-center text-xs text-stone-400">
           이 가이드는 일반적인 정보이며 수의사의 진단을 대체하지 않습니다.

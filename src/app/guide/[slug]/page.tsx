@@ -112,9 +112,11 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
           </section>
         ))}
 
-        <section className="bg-amber-100/60 rounded-2xl p-4 text-sm text-amber-900 leading-relaxed">
-          💡 {guide.appRule}
-        </section>
+        {guide.appRule && (
+          <section className="bg-amber-100/60 rounded-2xl p-4 text-sm text-amber-900 leading-relaxed">
+            💡 {guide.appRule}
+          </section>
+        )}
 
         {/* Vet finder */}
         <section className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
