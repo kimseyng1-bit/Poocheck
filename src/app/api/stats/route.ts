@@ -16,5 +16,10 @@ export async function GET(req: NextRequest) {
   if (token !== expected) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const days = Math.min(90, Math.max(1, Number(req.nextUrl.searchParams.get("days")) || 14));
-  return NextResponse.json({ store: storeKind, limits: LIMITS, days: await readStats(days) });
+  try {
+    return NextResponse.json({ store: storeKind, limits: LIMITS, days: await readStats(days) });
+  } catch (err) {
+    console.error("[/api/stats]", err);
+    return NextResponse.json({ store: storeKind, error: "stats store unavailable" }, { status: 503 });
+  }
 }
